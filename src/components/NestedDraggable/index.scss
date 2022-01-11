@@ -1,0 +1,49 @@
+.card-item {
+  position: relative;
+
+  border: 1px dashed #999;
+
+  margin: 20px 0;
+  min-height: 50px;
+}
+
+.card-item--active {
+  border-color: #1890ff;
+}
+
+.card-item:hover {
+  background: rgba(180, 180, 180, 0.1);
+}
+
+.card-copy {
+  position: absolute;
+  right: 50px;
+  top: -10px;
+  z-index: 2;
+}
+
+.card-delete {
+  position: absolute;
+  right: 15px;
+  top: -10px;
+  z-index: 2;
+}
+.child-copy {
+  position: absolute;
+  right: 20px;
+  top: -10px;
+  z-index: 2;
+}
+
+.child-delete {
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  z-index: 2;
+}
+
+.draggable-children {
+  position: relative;
+  border: 1px dashed #999;
+  display: inline-block;
+}
