@@ -12,7 +12,10 @@
         </div>
         <div class="shell-wrapper">
           <div class="shell-content">
-            <NestedDraggable :list="componentList" />
+            <NestedDraggable
+              :list="componentList"
+              @currentComponentChange="currentComponentChange"
+            />
           </div>
         </div>
       </div>
@@ -32,19 +35,51 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import ComponentMenu from '../components/ComponentMenu/ComponentMenu'
 import ComponentProperty from '../components/ComponentProperty/ComponentProperty'
-import NestedDraggable from '../components/NestedDraggable/hello'
+import NestedDraggable from '../components/NestedDraggable/NestedDraggable'
 import { componentMenuList } from '../components/data'
+import { useLocalStorage } from '@vueuse/core'
+
 const activeKey = ref('1')
 
-const componentList = reactive<Array<Record<string, any>>>([])
+const componentList = computed(() => {
+  console.log('componentList')
+  return useLocalStorage('componentList', []).value
+})
+
+// watch(
+//   () => componentList,
+//   (val) => {
+//     console.log(val)
+//   }
+// )
 
 const state = reactive({
   currentComponent: {},
   count: 0
 })
+
+onMounted(() => {
+  window.addEventListener('keydown', captureKeyboard)
+})
+
+function captureKeyboard(event: KeyboardEvent) {
+  if ((event.ctrlKey || event.metaKey) && (event.key === 'S' || event.key === 's')) {
+    saveData()
+    event.preventDefault()
+  }
+}
+
+function saveData() {
+  // useLocalStorage('componentList', componentList)
+}
+
+function currentComponentChange(element: Record<string, any>) {
+  console.log('currentComponentChange', element)
+  state.currentComponent = element
+}
 
 function getNewComponentSetting(type: string): Record<string, any> {
   let newSetting = {}
@@ -55,7 +90,7 @@ function getNewComponentSetting(type: string): Record<string, any> {
     required: true,
     disabled: false,
     grid: 24,
-    id: Date.now()
+    id: (+Date.now() + 1).toString()
   }
 
   // input 默认值
@@ -63,7 +98,9 @@ function getNewComponentSetting(type: string): Record<string, any> {
     type: 'input',
     maxLength: '',
     value: '',
-    innerWidth: 150
+    width: 150,
+    isRequired: false,
+    isEditable: true
   }
 
   // text 默认值
@@ -74,8 +111,11 @@ function getNewComponentSetting(type: string): Record<string, any> {
     paddingTop: 0,
     paddingBottom: 0,
     fontFamily: '宋体',
+    fontWeight: 400,
     value: '这是一段默认文字',
-    preset: 'main'
+    preset: '',
+    tag: 'span',
+    textAlign: 'left'
   }
 
   // 行容器默认值
@@ -106,21 +146,23 @@ function getNewComponentSetting(type: string): Record<string, any> {
 }
 
 function addComponent(item: string) {
-  const length = componentList.length
+  const length = componentList.value.length
   const settings = getNewComponentSetting(item)
-  componentList.push({
-    _isHover: false,
+  componentList.value.push({
     type: 'container',
-    id: Date.now().toString(),
+    _containerId: +Date.now().toString(),
     children: [settings]
   })
   console.log(componentList)
-  state.currentComponent = componentList[length]
+  state.currentComponent = componentList.value[length]
   state.count++
 }
 
 function componentPropertyChange(target: string, value: string) {
+  console.log(target, value)
   state.currentComponent[target] = value
+  console.log(state.currentComponent[target])
+  console.log(componentList)
 }
 </script>
 

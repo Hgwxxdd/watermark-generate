@@ -4,46 +4,64 @@
   border: 1px dashed #999;
 
   margin: 20px 0;
+  padding: 20px 0;
   min-height: 50px;
+
+  .button-group {
+    position: absolute;
+    right: 10px;
+    top: -10px;
+    z-index: 2;
+
+    display: none;
+
+    .card-copy {
+      padding: 4px;
+    }
+
+    .card-delete {
+      padding: 4px;
+    }
+  }
+
+  &:hover {
+    .button-group {
+      display: block;
+    }
+  }
+
+  &--active {
+    border-color: #1890ff;
+
+    .button-group {
+      display: block;
+    }
+  }
 }
 
-.card-item--active {
-  border-color: #1890ff;
-}
-
-.card-item:hover {
-  background: rgba(180, 180, 180, 0.1);
-}
-
-.card-copy {
-  position: absolute;
-  right: 50px;
-  top: -10px;
-  z-index: 2;
-}
-
-.card-delete {
-  position: absolute;
-  right: 15px;
-  top: -10px;
-  z-index: 2;
-}
-.child-copy {
-  position: absolute;
-  right: 20px;
-  top: -10px;
-  z-index: 2;
-}
-
-.child-delete {
-  position: absolute;
-  right: -10px;
-  top: -10px;
-  z-index: 2;
-}
-
-.draggable-children {
+.card-children {
   position: relative;
-  border: 1px dashed #999;
+
   display: inline-block;
+
+  .child-button-group {
+    position: absolute;
+    right: 0px;
+    top: -10px;
+    z-index: 2;
+
+    display: none;
+  }
+
+  &:hover {
+    background: rgba(180, 180, 180, 0.1);
+
+    .child-button-group {
+      display: block;
+    }
+  }
+}
+
+.card-children--active {
+  background-color: rgba(180, 180, 180, 0.1);
 }

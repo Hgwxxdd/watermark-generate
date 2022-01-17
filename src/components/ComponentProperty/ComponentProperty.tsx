@@ -27,18 +27,7 @@ export default defineComponent({
             label: '预设样式',
             type: 'a-select',
             value: 'preset',
-            props: {
-              options: [
-                {
-                  label: '宋体',
-                  value: '宋体'
-                },
-                {
-                  label: '微软雅黑',
-                  value: 'Microsoft Yahei'
-                }
-              ]
-            },
+            props: {},
             on: {
               onChange: (e: InputEvent) => {
                 emit('componentPropertyChange', (e.target as HTMLInputElement).value)
@@ -69,6 +58,63 @@ export default defineComponent({
             }
           },
           {
+            label: '字体粗细',
+            type: 'a-input',
+            value: 'fontWeight',
+            on: {
+              onInput: (e: InputEvent) =>
+                emit('componentPropertyChange', 'fontWeight', (e.target as HTMLInputElement).value)
+            }
+          },
+          {
+            label: '是否换行',
+            type: 'a-select',
+            value: 'tag',
+            props: {
+              options: [
+                {
+                  label: '换行',
+                  value: 'div'
+                },
+                {
+                  label: '不换行',
+                  value: 'span'
+                }
+              ]
+            },
+            on: {
+              onChange: (value: string) => {
+                emit('componentPropertyChange', 'tag', value)
+              }
+            }
+          },
+          {
+            label: '文字对齐',
+            type: 'a-select',
+            value: 'textAlign',
+            props: {
+              options: [
+                {
+                  label: '居中',
+                  value: 'center'
+                },
+                {
+                  label: '左对齐',
+                  value: 'left'
+                },
+                {
+                  label: '右对齐',
+                  value: 'right'
+                }
+              ]
+            },
+            on: {
+              onChange: (value: string) => {
+                emit('componentPropertyChange', 'textAlign', value)
+              }
+            }
+          },
+          {
             label: '输入值',
             type: 'a-textarea',
             value: 'value',
@@ -85,10 +131,72 @@ export default defineComponent({
           {
             label: '长度',
             type: 'a-input',
-            value: 'innerWidth',
+            value: 'width',
             on: {
               onInput: (e: InputEvent) =>
-                emit('componentPropertyChange', 'innerWidth', (e.target as HTMLInputElement).value)
+                emit('componentPropertyChange', 'width', (e.target as HTMLInputElement).value)
+            }
+          },
+          {
+            label: '字段名',
+            type: 'a-input',
+            value: 'name',
+            on: {
+              onInput: (e: InputEvent) =>
+                emit('componentPropertyChange', 'width', (e.target as HTMLInputElement).value)
+            }
+          },
+          {
+            label: '字段值',
+            type: 'a-input',
+            value: 'value',
+            on: {
+              onInput: (e: InputEvent) =>
+                emit('componentPropertyChange', 'width', (e.target as HTMLInputElement).value)
+            }
+          },
+          {
+            label: '是否必填',
+            type: 'a-select',
+            value: 'isRequired',
+            props: {
+              options: [
+                {
+                  label: '是',
+                  value: true
+                },
+                {
+                  label: '否',
+                  value: false
+                }
+              ]
+            },
+            on: {
+              onChange: (value: string) => {
+                emit('componentPropertyChange', 'isRequired', value)
+              }
+            }
+          },
+          {
+            label: '能否编辑',
+            type: 'a-select',
+            value: 'isEditable',
+            props: {
+              options: [
+                {
+                  label: '是',
+                  value: true
+                },
+                {
+                  label: '否',
+                  value: false
+                }
+              ]
+            },
+            on: {
+              onChange: (value: string) => {
+                emit('componentPropertyChange', 'isEditable', value)
+              }
             }
           }
         ]
@@ -98,7 +206,7 @@ export default defineComponent({
         return
       }
 
-      if (!currentComponent.type || !currentComponent.value) {
+      if (!currentComponent.type) {
         throw new Error('检查组件配置 JSON 是否正确')
       }
 

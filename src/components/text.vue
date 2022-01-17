@@ -1,42 +1,38 @@
 <template>
-  <span class="text" :style="style" span="6"> {{ text }} </span>
+  <component :is="tag" :style="style" class="text">
+    {{ value }}
+  </component>
 </template>
 
-<script>
-export default {
-  props: {
-    text: {
-      type: [String, Number]
-    },
-    fontSize: {
-      type: [Number, String],
-      default: 14
-    },
-    letterSpacing: {
-      type: [Number, String],
-      default: 0
-    },
-    // fontFamily: {
-    //   type: String,
-    //   default: "宋体",
-    // },
-    preset: {
-      type: String,
-      default: 'main'
-    }
-  },
-  data() {
-    return {}
-  },
-  computed: {
-    style() {
-      return {
-        fontSize: `${this.fontSize}px`,
-        letterSpacing: `${this.letterSpacing}px`
-      }
-    }
-  }
+<script setup lang="ts">
+import { defineProps, withDefaults, computed } from 'vue'
+
+interface Props {
+  value?: string | number
+  fontSize?: string | number
+  letterSpacing?: string | number
+  fontWeight?: string | number
+  tag: string
+  textAlign: string
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  value: '默认文字',
+  fontSize: '14',
+  letterSpacing: '0',
+  fontWeight: '400',
+  textAlign: 'left',
+  tag: 'span'
+})
+
+const style = computed(() => {
+  return {
+    fontSize: `${props.fontSize}px`,
+    letterSpacing: `${props.letterSpacing}px`,
+    fontWeight: `${props.fontWeight}`,
+    textAlign: `${props.textAlign}`
+  }
+})
 </script>
 
 <style scoped>

@@ -7,6 +7,7 @@
 </template>
 
 <script setup lang="ts">
+import { withDefaults, defineProps } from 'vue'
 import { IconPark } from '@icon-park/vue-next/es/all'
 
 type Theme = 'outline' | 'filled' | 'two-tone' | 'multi-color'
@@ -25,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 button {
   border: none;
   outline: none;
