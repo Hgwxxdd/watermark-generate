@@ -44,16 +44,6 @@ const componentMenuList: Array<ComponentMenuList> = [
         type: 'select'
       }
     ]
-  },
-  {
-    type: 'group',
-    name: '附件上传',
-    groupItem: [
-      {
-        name: '图片上传',
-        type: 'image'
-      }
-    ]
   }
 ]
 
