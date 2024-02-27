@@ -1,8 +1,41 @@
-<script setup lang="ts">
+<script setup>
+import { ref } from 'vue'
+
 import Nav from './components/Nav.vue'
+import VSelect from './components/Select.vue'
+import VRadio from './components/Radio.vue'
+
+function test(event) {
+  console.log(event)
+}
+
+function handleChange(e) {
+  console.log('here', e)
+}
+
+const options = ref([
+  {
+    label: '1',
+    value: '1'
+  },
+  {
+    label: '2',
+    value: '2'
+  }
+])
+
+function handleAdd() {
+  options.value.push({
+    label: 12,
+    value: 'asdf'
+  })
+}
 </script>
 
 <template>
+  <!-- <VSelect :options="options" @change="handleChange" defaultValue="2"></VSelect>
+  <VRadio :options="options" @change="handleChange" defaultValue="2"></VRadio>
+  <button @click="handleAdd">add</button> -->
   <header>
     <div class="title">Contract Playground</div>
     <Nav />
