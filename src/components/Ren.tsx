@@ -1,6 +1,7 @@
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive, computed, watch, watchEffect, onMounted } from 'vue'
 import Select from './Select.vue'
-
+import { cloneDeep } from 'lodash'
+import { watchArray } from '@vueuse/core'
 // 如何实时收集内部组件的数据
 // 如何对组件的数据进行校验
 // 如何更新组件数据  // 调用 api
@@ -76,29 +77,10 @@ export default defineComponent({
     }
 
     function select(item) {
-      // if (item.options) {
-      //   item.options.forEach((item) => {
-      //     if (item.emits.length) {
-      //       item.emits.forEach((item) => {
-      //         // 用 proxy，拦截set，然后每次 set, 的时候触发依赖数组
-      //         // 观察者模式
-      //       })
-      //     }
-      //   })
-      // }
-
       return <Select name={item.name} options={item.options} {...item.on} />
     }
 
-    function changedata(oldData, name, property, value) {
-      const newData = oldData
-
-      // diff 算法
-
-      return newData
-    }
-
-    let arr = [
+    let tree = reactive([
       {
         componentName: 'block',
         visible: true,
@@ -335,12 +317,14 @@ export default defineComponent({
                 value: '1',
                 emits: [
                   {
-                    name: 'b1',
+                    uniqueName: 'name',
+                    uniqueValue: 'b1',
                     property: 'visible',
                     value: false
                   },
                   {
-                    name: 'b2',
+                    uniqueName: 'name',
+                    uniqueValue: 'b2',
                     property: 'visible',
                     value: true
                   }
@@ -351,12 +335,14 @@ export default defineComponent({
                 value: '2',
                 emits: [
                   {
-                    name: 'b1',
+                    uniqueName: 'name',
+                    uniqueValue: 'b1',
                     property: 'visible',
                     value: true
                   },
                   {
-                    name: 'b2',
+                    uniqueName: 'name',
+                    uniqueValue: 'b2',
                     property: 'visible',
                     value: false
                   }
@@ -366,10 +352,10 @@ export default defineComponent({
             on: {
               onChange: (options) => {
                 console.log(options)
-                // form[options.name] = options.value
-                // console.log(form)
-                // 通知订阅
-                // setdata([], options)
+                form[options.name] = options.value
+                console.log(form)
+                // TODO 通知订阅
+                handleSubscribe(options.emits)
               }
             }
           },
@@ -520,53 +506,46 @@ export default defineComponent({
         componentName: 'text',
         content: '元整）'
       }
-    ]
+    ])
 
-    function setdata(data, options) {
-      console.log(options)
-
-      let arr = replaceValueInNestedStructure(data, name, property, newValue)
-
-      // key -> name-value -> fn
+    function handleSubscribe(emits) {
+      console.log(emits)
+      emits.forEach((item) => {
+        // 找到对应的属性然后更改
+        let obj = findPropertyByName(item.uniqueName, item.uniqueValue)
+        if (obj) {
+          setNewValue(obj, item.property, item.value)
+        }
+      })
+      console.log(tree)
     }
     // 找到属性然后改掉
-    function replaceValueInNestedStructure(data, name, property, newValue) {
-      if (Array.isArray(data)) {
-        // 如果是数组，递归处理每个元素
-        data.forEach((item) => {
-          replaceValueInNestedStructure(item, name, property, newValue)
-        })
-      } else if (typeof data === 'object' && data !== null) {
-        // 如果是对象，并且满足指定的name属性值，才替换目标键的值
-        if (data.hasOwnProperty('name') && data['name'] === name && data.hasOwnProperty(property)) {
-          data[property] = newValue
-        }
-        // 无论是否找到匹配项，都继续递归搜索
-        Object.keys(data).forEach((key) => {
-          if (typeof data[key] === 'object') {
-            replaceValueInNestedStructure(data[key], name, property, newValue)
-          }
-        })
-      }
-      return data
+    function setNewValue(obj, property, value) {
+      console.log(obj, property, value)
+      obj[property] = value
     }
-
-    let component = arr.map((item) => {
-      if (item.componentName === 'text') {
-        return text(item.content, item.display)
-      } else if (item.componentName === 'input') {
-        return input(item.name, item.display)
-      } else if (item.componentName === 'radio') {
-      } else if (item.componentName === 'select') {
-        return select(item)
-      }
-      if (item.componentName === 'block') {
-        if (item.visible) {
-          return display(item)
+    function findPropertyByName(uniqueName, uniqueValue) {
+      // 声明一个内部递归函数，用于执行深度优先搜索
+      function dfs(arr) {
+        for (const obj of arr) {
+          console.log(obj[uniqueName], uniqueValue)
+          if (obj[uniqueName] === uniqueValue) {
+            return obj // 找到目标对象，返回结果
+          }
+          // 如果当前对象有 children 属性且为数组，则递归搜索其子对象
+          if (Array.isArray(obj.children)) {
+            const found = dfs(obj.children)
+            if (found) {
+              return found // 如果在子对象中找到目标对象，返回结果
+            }
+          }
         }
-        return
+        return null // 如果遍历完整个数组都没有找到目标对象，返回 null
       }
-    })
+
+      // 调用内部的递归函数开始搜索
+      return dfs(tree)
+    }
 
     function display(block) {
       return (
@@ -587,28 +566,48 @@ export default defineComponent({
       )
     }
 
-    let map = {
-      clientList: [],
-      listen: function (key, fn) {
-        if (!this.clientList[key]) {
-          this.clientList[key] = []
-        }
-        this.clientList[key].push(fn)
-      },
-      trigger: function (key) {
-        for (const fn of this.clientList[key]) {
-          fn()
-        }
-      }
-    }
+    // 待定 观察者模式
+    // let map = {
+    //   clientList: [],
+    //   listen: function (key, fn) {
+    //     if (!this.clientList[key]) {
+    //       this.clientList[key] = []
+    //     }
+    //     this.clientList[key].push(fn)
+    //   },
+    //   trigger: function (key) {
+    //     for (const fn of this.clientList[key]) {
+    //       fn()
+    //     }
+    //   }
+    // }
 
     function handleSubmit() {
-      console.log(arr)
+      // console.log(tree)
+      console.log(form)
     }
 
     return () => (
       <div>
-        <div>{component}</div>
+        <div>
+          {tree.map((item) => {
+            if (item.componentName === 'text') {
+              return text(item.content, item.display)
+            } else if (item.componentName === 'input') {
+              return input(item.name, item.display)
+            } else if (item.componentName === 'radio') {
+            } else if (item.componentName === 'select') {
+              return select(item)
+            }
+            if (item.componentName === 'block') {
+              console.log(item.visible)
+              if (item.visible) {
+                return display(item)
+              }
+              return
+            }
+          })}
+        </div>
         <button onClick={handleSubmit}>提交</button>
       </div>
     )
