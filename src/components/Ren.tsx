@@ -1,7 +1,6 @@
 import { defineComponent, reactive, computed, watch, watchEffect, onMounted } from 'vue'
 import Select from './Select.vue'
-import { cloneDeep } from 'lodash'
-import { watchArray } from '@vueuse/core'
+import Radio from './Radio.vue'
 // 如何实时收集内部组件的数据
 // 如何对组件的数据进行校验
 // 如何更新组件数据  // 调用 api
@@ -10,6 +9,8 @@ import { watchArray } from '@vueuse/core'
 
 export default defineComponent({
   setup() {
+    // TODO 根据 json 生成一个文件
+
     const form = reactive({
       contractNumber: '',
       sellers: '',
@@ -47,8 +48,12 @@ export default defineComponent({
       payment: '',
       capitalizeMoney: '',
       // 贷款方式
-      loanMethods: ''
+      loanMethods: '',
+      diya: ''
     })
+
+    // TODO 用一个算法筛选黑名单出来
+    const blackList = []
 
     function text(value, str = 'span') {
       if (str === 'block') {
@@ -78,6 +83,10 @@ export default defineComponent({
 
     function select(item) {
       return <Select name={item.name} options={item.options} {...item.on} />
+    }
+
+    function radio(item) {
+      return <Radio name={item.name} options={item.options} {...item.on}></Radio>
     }
 
     let tree = reactive([
@@ -257,47 +266,92 @@ export default defineComponent({
         content: '与该商品房有关的抵押情况为'
       },
       {
-        componentName: 'radio'
+        componentName: 'radio',
+        readonly: true,
+        visible: true,
+        name: 'diya',
+        options: [
+          {
+            label: '抵押',
+            value: '1',
+            emits: [
+              {
+                uniqueName: 'name',
+                uniqueValue: 's1',
+                property: 'visible',
+                value: false
+              }
+            ]
+          },
+          {
+            label: '未抵押',
+            value: '2',
+            emits: [
+              {
+                uniqueName: 'name',
+                uniqueValue: 's1',
+                property: 'visible',
+                value: true
+              }
+            ]
+          }
+        ],
+        on: {
+          onChange: (options) => {
+            console.log(options)
+            form[options.name] = options.value
+            console.log(form)
+            // 通知订阅
+            handleSubscribe(options.emits)
+          }
+        }
       },
       {
-        componentName: 'text',
-        content: '抵押人'
-      },
-      {
-        componentName: 'input',
-        name: 'mortgagor'
-      },
-      {
-        componentName: 'text',
-        content: '，抵押权人：'
-      },
-      {
-        componentName: 'input',
-        name: 'mortgagee'
-      },
-      {
-        componentName: 'text',
-        content: '抵押登记机构：'
-      },
-      {
-        componentName: 'input',
-        name: 'mortgageRegistrationAgency'
-      },
-      {
-        componentName: 'text',
-        content: '，抵押登记日期：'
-      },
-      {
-        componentName: 'input',
-        name: 'mortgageDate'
-      },
-      {
-        componentName: 'text',
-        content: '债务履行权限：'
-      },
-      {
-        componentName: 'input',
-        name: 'debtPerformanceAuthority'
+        componentName: 'block',
+        name: 's1',
+        visible: true,
+        children: [
+          {
+            componentName: 'text',
+            content: '抵押人'
+          },
+          {
+            componentName: 'input',
+            name: 'mortgagor'
+          },
+          {
+            componentName: 'text',
+            content: '，抵押权人：'
+          },
+          {
+            componentName: 'input',
+            name: 'mortgagee'
+          },
+          {
+            componentName: 'text',
+            content: '抵押登记机构：'
+          },
+          {
+            componentName: 'input',
+            name: 'mortgageRegistrationAgency'
+          },
+          {
+            componentName: 'text',
+            content: '，抵押登记日期：'
+          },
+          {
+            componentName: 'input',
+            name: 'mortgageDate'
+          },
+          {
+            componentName: 'text',
+            content: '债务履行权限：'
+          },
+          {
+            componentName: 'input',
+            name: 'debtPerformanceAuthority'
+          }
+        ]
       },
       {
         componentName: 'block',
@@ -310,6 +364,7 @@ export default defineComponent({
           {
             componentName: 'select',
             readonly: true,
+            visible: false,
             name: 'buyerPaymentMethod',
             options: [
               {
@@ -354,7 +409,7 @@ export default defineComponent({
                 console.log(options)
                 form[options.name] = options.value
                 console.log(form)
-                // TODO 通知订阅
+                // 通知订阅
                 handleSubscribe(options.emits)
               }
             }
@@ -515,6 +570,10 @@ export default defineComponent({
         let obj = findPropertyByName(item.uniqueName, item.uniqueValue)
         if (obj) {
           setNewValue(obj, item.property, item.value)
+          // 如果不可见，把里面的提交项全部删掉
+          if (!obj.visible) {
+            // TODO dfs 找到 obj 里所有的 name, 加入 blacklist
+          }
         }
       })
       console.log(tree)
@@ -556,6 +615,7 @@ export default defineComponent({
             } else if (item.componentName === 'input') {
               return input(item.name, item.display)
             } else if (item.componentName === 'radio') {
+              return radio(item)
             } else if (item.componentName === 'select') {
               return select(item)
             }
@@ -596,11 +656,11 @@ export default defineComponent({
             } else if (item.componentName === 'input') {
               return input(item.name, item.display)
             } else if (item.componentName === 'radio') {
+              return radio(item)
             } else if (item.componentName === 'select') {
               return select(item)
             }
             if (item.componentName === 'block') {
-              console.log(item.visible)
               if (item.visible) {
                 return display(item)
               }

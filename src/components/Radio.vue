@@ -1,20 +1,21 @@
 <template>
-  <div>
-    <span v-for="option in options" :key="option.value">
-      <input
-        type="radio"
-        :value="option.value"
-        v-model="selectedValue"
-        :disabled="disabled"
-        :id="option.value"
-      />
-      <label :for="option.value">{{ option.label }}</label>
-    </span>
-  </div>
+  <span v-for="option in options" :key="option.value">
+    <input
+      type="radio"
+      :value="option.value"
+      v-model="selectedValue"
+      :disabled="disabled"
+      :id="option.value"
+      @change="handleChange"
+    />
+    <label :for="option.value">{{ option.label }}</label>
+  </span>
 </template>
 
 <script setup>
 import { ref, watch, onMounted, defineProps } from 'vue'
+
+const emit = defineEmits(['change'])
 
 const props = defineProps({
   defaultValue: {
@@ -28,8 +29,16 @@ const props = defineProps({
   options: {
     type: Array,
     default: []
+  },
+  name: {
+    type: String
   }
 })
+
+const handleChange = (event) => {
+  const selectedOption = props.options.find((option) => option.value === event.target.value)
+  emit('change', Object.assign({}, selectedOption, { name: props.name }))
+}
 
 const selectedValue = ref(props.defaultValue)
 
