@@ -1,24 +1,38 @@
 <template>
-  <input type="text" :style="style" />
+  <input type="text" :disabled="props.disabled" @input="handleInput" v-model="text" />
 </template>
 
-<script setup lang="ts">
-import { defineProps, withDefaults, computed } from 'vue'
+<script setup>
+import { ref, defineEmits, watch } from 'vue'
+const emit = defineEmits(['input'])
 
-interface Props {
-  width: string | number
-  value: string | number
-}
+const text = ref('')
 
-const props = withDefaults(defineProps<Props>(), {
-  width: '100px'
-})
-
-const style = computed(() => {
-  return {
-    width: `${props.width}px`
+const props = defineProps({
+  defaultValue: {
+    type: String,
+    default: ''
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+  name: {
+    type: String
   }
 })
+
+const handleInput = () => {
+  emit('input', { name: props.name, value: text.value })
+}
+
+watch(
+  () => props.defaultValue,
+  (newValue) => {
+    text.value = newValue
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

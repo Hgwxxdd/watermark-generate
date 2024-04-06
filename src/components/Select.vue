@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   defaultValue: {
@@ -39,15 +39,9 @@ const handleChange = (event) => {
 // // 监听 defaultValue 的变化，以更新选中的值
 watch(
   () => props.defaultValue,
-  (newVal) => {
-    // selectedValue.value = newVal
-  }
+  (newValue) => {
+    selectedValue.value = newValue
+  },
+  { immediate: true }
 )
-
-// 组件挂载时，如果 defaultValue 有值，则设置为选中的值
-onMounted(() => {
-  if (props.defaultValue) {
-    selectedValue.value = props.defaultValue
-  }
-})
 </script>

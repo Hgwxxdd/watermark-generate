@@ -4,7 +4,7 @@
       type="radio"
       :value="option.value"
       v-model="selectedValue"
-      :disabled="disabled"
+      :disabled="props.disabled"
       :id="option.value"
       @change="handleChange"
     />
@@ -13,7 +13,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, defineProps } from 'vue'
+import { ref, watch, defineProps, defineEmits } from 'vue'
 
 const emit = defineEmits(['change'])
 
@@ -35,23 +35,18 @@ const props = defineProps({
   }
 })
 
+const selectedValue = ref('')
+
 const handleChange = (event) => {
   const selectedOption = props.options.find((option) => option.value === event.target.value)
   emit('change', Object.assign({}, selectedOption, { name: props.name }))
 }
 
-const selectedValue = ref(props.defaultValue)
-
 watch(
   () => props.defaultValue,
   (newValue) => {
     selectedValue.value = newValue
-  }
+  },
+  { immediate: true }
 )
-
-onMounted(() => {
-  if (props.defaultValue) {
-    selectedValue.value = props.defaultValue
-  }
-})
 </script>

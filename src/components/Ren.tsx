@@ -1,15 +1,15 @@
 import { defineComponent, reactive, computed, watch, watchEffect, onMounted } from 'vue'
 import Select from './Select.vue'
 import Radio from './Radio.vue'
-// 如何实时收集内部组件的数据
-// 如何对组件的数据进行校验
-// 如何更新组件数据  // 调用 api
-
-// a ? 直接创建一个 reactive 大对象
+import Input from './input.vue'
 
 export default defineComponent({
   setup() {
     // TODO 根据 json 生成一个文件
+
+    onMounted(() => {
+      getData()
+    })
 
     const form = reactive({
       contractNumber: '',
@@ -52,44 +52,7 @@ export default defineComponent({
       diya: ''
     })
 
-    // TODO 用一个算法筛选黑名单出来
-    const blackList = []
-
-    function text(value, str = 'span') {
-      if (str === 'block') {
-        return <div>{value}</div>
-      }
-      return <str>{value}</str>
-    }
-
-    function input(name, display) {
-      const handleInput = (event) => {
-        console.log(form)
-        form[name] = event.target.value
-      }
-
-      if (display === 'block') {
-        return (
-          <input
-            style={{ display: 'block' }}
-            type="text"
-            value={form[name]}
-            onInput={handleInput}
-          />
-        )
-      }
-      return <input type="text" value={form[name]} onInput={handleInput} />
-    }
-
-    function select(item) {
-      return <Select name={item.name} options={item.options} {...item.on} />
-    }
-
-    function radio(item) {
-      return <Radio name={item.name} options={item.options} {...item.on}></Radio>
-    }
-
-    let tree = reactive([
+    const tree = reactive([
       {
         componentName: 'block',
         visible: true,
@@ -267,7 +230,7 @@ export default defineComponent({
       },
       {
         componentName: 'radio',
-        readonly: true,
+        disabled: false,
         visible: true,
         name: 'diya',
         options: [
@@ -298,9 +261,8 @@ export default defineComponent({
         ],
         on: {
           onChange: (options) => {
-            console.log(options)
             form[options.name] = options.value
-            console.log(form)
+
             // 通知订阅
             handleSubscribe(options.emits)
           }
@@ -363,7 +325,7 @@ export default defineComponent({
           },
           {
             componentName: 'select',
-            readonly: true,
+            disabled: false,
             visible: false,
             name: 'buyerPaymentMethod',
             options: [
@@ -406,9 +368,8 @@ export default defineComponent({
             ],
             on: {
               onChange: (options) => {
-                console.log(options)
                 form[options.name] = options.value
-                console.log(form)
+
                 // 通知订阅
                 handleSubscribe(options.emits)
               }
@@ -496,6 +457,8 @@ export default defineComponent({
       },
       {
         componentName: 'select',
+        disabled: true,
+        visible: false,
         name: 'loanMethods',
         options: [
           {
@@ -509,11 +472,7 @@ export default defineComponent({
         ],
         on: {
           onChange: (options) => {
-            console.log(options)
             form[options.name] = options.value
-            console.log(form)
-            // 通知订阅
-            // setdata([], options)
           }
         }
       },
@@ -523,7 +482,8 @@ export default defineComponent({
       },
       {
         componentName: 'input',
-        name: 'buyerMonth'
+        name: 'buyerMonth',
+        disabled: false
       },
       {
         componentName: 'text',
@@ -531,7 +491,8 @@ export default defineComponent({
       },
       {
         componentName: 'input',
-        name: 'buyerDay'
+        name: 'buyerDay',
+        disabled: false
       },
       {
         componentName: 'text',
@@ -539,7 +500,8 @@ export default defineComponent({
       },
       {
         componentName: 'input',
-        name: 'currency'
+        name: 'currency',
+        disabled: false
       },
       {
         componentName: 'text',
@@ -547,7 +509,8 @@ export default defineComponent({
       },
       {
         componentName: 'input',
-        name: 'payment'
+        name: 'payment',
+        disabled: false
       },
       {
         componentName: 'text',
@@ -555,7 +518,8 @@ export default defineComponent({
       },
       {
         componentName: 'input',
-        name: 'capitalizeMoney'
+        name: 'capitalizeMoney',
+        disabled: false
       },
       {
         componentName: 'text',
@@ -563,8 +527,115 @@ export default defineComponent({
       }
     ])
 
+    // TODO 用一个算法筛选黑名单出来
+    const blackList = []
+
+    function mockData() {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve({
+            contractNumber: '1',
+            sellers: '2',
+            buyers: '3',
+            roomNumber: '4',
+            area: '5',
+            houseQuality: '6',
+            rentFromYear: '7',
+            rentFromMonth: '8',
+            rentFromDay: '9',
+            rentToYear: '10',
+            rentToMonth: '11',
+            rentToDay: '12',
+            // 抵押人
+            mortgagor: '13',
+            // 抵押权人
+            mortgagee: '14',
+            // 抵押登记机构
+            mortgageRegistrationAgency: '15',
+            // 抵押登记日期
+            mortgageDate: '16',
+            // 债务履行权限
+            debtPerformanceAuthority: '17',
+            // 买受人付款
+            buyerPaymentMethod: '1',
+            oneTimePaymentYear: '19',
+            oneTimePaymentMonth: '20',
+            oneTimePaymentDay: '21',
+            instalmentYear: '22',
+            instalmentMonth: '23',
+            instalmentDay: '24',
+            buyerMonth: '25',
+            buyerDay: '26',
+            currency: '27',
+            payment: '28',
+            capitalizeMoney: '29',
+            // 贷款方式
+            loanMethods: '2',
+            diya: '1'
+          })
+        }, 2000)
+      })
+    }
+
+    function getData() {
+      mockData().then((response) => {
+        Object.keys(response).forEach((key) => {
+          let obj = findPropertyByName('name', key)
+          if (obj) {
+            obj.defaultValue = response[key]
+          }
+        })
+      })
+    }
+
+    function text(value, str = 'span') {
+      if (str === 'block') {
+        return <div>{value}</div>
+      }
+      return <str>{value}</str>
+    }
+
+    function handleInput(obj) {
+      const { name, value } = obj
+      form[name] = value
+    }
+
+    function input(item) {
+      return (
+        <Input
+          name={item.name}
+          defaultValue={item.defaultValue}
+          disabled={item.disabled}
+          onInput={handleInput}
+        />
+      )
+    }
+
+    function select(item) {
+      return (
+        <Select
+          name={item.name}
+          defaultValue={item.defaultValue}
+          options={item.options}
+          {...item.on}
+          disabled={item.disabled}
+        />
+      )
+    }
+
+    function radio(item) {
+      return (
+        <Radio
+          name={item.name}
+          defaultValue={item.defaultValue}
+          options={item.options}
+          {...item.on}
+          disabled={item.disabled}
+        />
+      )
+    }
+
     function handleSubscribe(emits) {
-      console.log(emits)
       emits.forEach((item) => {
         // 找到对应的属性然后更改
         let obj = findPropertyByName(item.uniqueName, item.uniqueValue)
@@ -576,18 +647,15 @@ export default defineComponent({
           }
         }
       })
-      console.log(tree)
     }
     // 找到属性然后改掉
     function setNewValue(obj, property, value) {
-      console.log(obj, property, value)
       obj[property] = value
     }
     function findPropertyByName(uniqueName, uniqueValue) {
       // 声明一个内部递归函数，用于执行深度优先搜索
       function dfs(arr) {
         for (const obj of arr) {
-          console.log(obj[uniqueName], uniqueValue)
           if (obj[uniqueName] === uniqueValue) {
             return obj // 找到目标对象，返回结果
           }
@@ -613,13 +681,12 @@ export default defineComponent({
             if (item.componentName === 'text') {
               return text(item.content, item.display)
             } else if (item.componentName === 'input') {
-              return input(item.name, item.display)
+              return input(item)
             } else if (item.componentName === 'radio') {
               return radio(item)
             } else if (item.componentName === 'select') {
               return select(item)
             }
-
             return null
           })}
         </div>
@@ -642,10 +709,7 @@ export default defineComponent({
     //   }
     // }
 
-    function handleSubmit() {
-      // console.log(tree)
-      console.log(form)
-    }
+    function handleSubmit() {}
 
     return () => (
       <div>
@@ -654,7 +718,7 @@ export default defineComponent({
             if (item.componentName === 'text') {
               return text(item.content, item.display)
             } else if (item.componentName === 'input') {
-              return input(item.name, item.display)
+              return input(item)
             } else if (item.componentName === 'radio') {
               return radio(item)
             } else if (item.componentName === 'select') {
