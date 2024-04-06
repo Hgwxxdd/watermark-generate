@@ -38,14 +38,21 @@ const props = defineProps({
 const selectedValue = ref('')
 
 const handleChange = (event) => {
-  const selectedOption = props.options.find((option) => option.value === event.target.value)
+  emitData(event.target.value)
+}
+
+function emitData(value) {
+  const selectedOption = props.options.find((option) => option.value === value)
   emit('change', Object.assign({}, selectedOption, { name: props.name }))
 }
 
 watch(
   () => props.defaultValue,
   (newValue) => {
+    if (!newValue) return
+
     selectedValue.value = newValue
+    emitData(newValue)
   },
   { immediate: true }
 )

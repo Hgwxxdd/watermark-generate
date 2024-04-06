@@ -261,6 +261,7 @@ export default defineComponent({
         ],
         on: {
           onChange: (options) => {
+            console.log(options)
             form[options.name] = options.value
 
             // 通知订阅
@@ -636,6 +637,7 @@ export default defineComponent({
     }
 
     function handleSubscribe(emits) {
+      console.log(emits)
       emits.forEach((item) => {
         // 找到对应的属性然后更改
         let obj = findPropertyByName(item.uniqueName, item.uniqueValue)
