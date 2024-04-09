@@ -1,4 +1,4 @@
-import { defineComponent, reactive, computed, watch, watchEffect, onMounted } from 'vue'
+import { defineComponent, reactive, onMounted } from 'vue'
 import Select from './Select.vue'
 import Radio from './Radio.vue'
 import Input from './input.vue'
@@ -574,6 +574,12 @@ export default defineComponent({
             loanMethods: '2',
             diya: '1'
           })
+
+          // 也可以传一些更新组件的数据，但是你需要保证整个关系的对应
+          {
+            // name: xxx,
+            // options: [, emits]
+          }
         }, 2000)
       })
     }
@@ -695,23 +701,11 @@ export default defineComponent({
       )
     }
 
-    // 待定 观察者模式
-    // let map = {
-    //   clientList: [],
-    //   listen: function (key, fn) {
-    //     if (!this.clientList[key]) {
-    //       this.clientList[key] = []
-    //     }
-    //     this.clientList[key].push(fn)
-    //   },
-    //   trigger: function (key) {
-    //     for (const fn of this.clientList[key]) {
-    //       fn()
-    //     }
-    //   }
-    // }
-
-    function handleSubmit() {}
+    function handleSubmit() {
+      setTimeout(() => {
+        // axios.post('xxx', form)
+      })
+    }
 
     return () => (
       <div>

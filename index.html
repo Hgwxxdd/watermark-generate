@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -12,7 +12,29 @@
     }
   </style>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <!-- <div id="app"></div> -->
+    <!-- <script type="module" src="/src/main.ts"></script> -->
+    <iframe id="myIframe" width="800" height="800"></iframe>
+    <button id="sendMessage">post user data</button>
+    <script type="module">
+      import { str } from './child.js'
+
+      // 通过 JavaScript 设置 iframe 的 srcdoc 属性
+      const iframe = document.getElementById('myIframe')
+      iframe.srcdoc = str
+
+      const button = document.getElementById('sendMessage')
+
+      // 点击按钮时向子页面发送消息
+      button.addEventListener('click', () => {
+        const message = 'Hello from parent!'
+        iframe.contentWindow.postMessage(message, '*') // 注意: 在生产中应当使用确切的目标源替代 '*'
+      })
+
+      // 接收来自子页面的消息
+      window.addEventListener('message', (event) => {
+        console.log('Message received from child:', event.data)
+      })
+    </script>
   </body>
 </html>
