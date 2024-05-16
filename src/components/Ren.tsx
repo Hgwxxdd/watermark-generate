@@ -1,14 +1,28 @@
-import { defineComponent, reactive, onMounted } from 'vue'
-import Select from './Select.vue'
+import { defineComponent, reactive, onMounted, ref } from 'vue'
+import Select from './SelectTwo.vue'
 import Radio from './Radio.vue'
-import Input from './input.vue'
+import Input from './Input.vue'
+import axios from 'axios'
 
 export default defineComponent({
   setup() {
-    // TODO 根据 json 生成一个文件
+    let sourceValue
+    let originValue
 
     onMounted(() => {
-      getData()
+      console.log('here')
+
+      window.addEventListener(
+        'message',
+        function (event) {
+          sourceValue = event.source
+          originValue = event.origin
+          console.log(sourceValue)
+          console.log(originValue)
+          getData(event.data)
+        },
+        { once: true }
+      )
     })
 
     const form = reactive({
@@ -51,6 +65,9 @@ export default defineComponent({
       loanMethods: '',
       diya: ''
     })
+
+    const origin = ref('')
+    const source = ref('')
 
     const tree = reactive([
       {
@@ -531,67 +548,18 @@ export default defineComponent({
     // TODO 用一个算法筛选黑名单出来
     const blackList = []
 
-    function mockData() {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          resolve({
-            contractNumber: '1',
-            sellers: '2',
-            buyers: '3',
-            roomNumber: '4',
-            area: '5',
-            houseQuality: '6',
-            rentFromYear: '7',
-            rentFromMonth: '8',
-            rentFromDay: '9',
-            rentToYear: '10',
-            rentToMonth: '11',
-            rentToDay: '12',
-            // 抵押人
-            mortgagor: '13',
-            // 抵押权人
-            mortgagee: '14',
-            // 抵押登记机构
-            mortgageRegistrationAgency: '15',
-            // 抵押登记日期
-            mortgageDate: '16',
-            // 债务履行权限
-            debtPerformanceAuthority: '17',
-            // 买受人付款
-            buyerPaymentMethod: '1',
-            oneTimePaymentYear: '19',
-            oneTimePaymentMonth: '20',
-            oneTimePaymentDay: '21',
-            instalmentYear: '22',
-            instalmentMonth: '23',
-            instalmentDay: '24',
-            buyerMonth: '25',
-            buyerDay: '26',
-            currency: '27',
-            payment: '28',
-            capitalizeMoney: '29',
-            // 贷款方式
-            loanMethods: '2',
-            diya: '1'
+    function getData(params) {
+      axios.get('http://127.0.0.1:3000/cats', params).then((res) => {
+        if (res && res.data) {
+          let data = res.data
+          console.log(data)
+          Object.keys(data).forEach((key) => {
+            let obj = findPropertyByName('name', key)
+            if (obj) {
+              obj.defaultValue = data[key]
+            }
           })
-
-          // 也可以传一些更新组件的数据，但是你需要保证整个关系的对应
-          {
-            // name: xxx,
-            // options: [, emits]
-          }
-        }, 2000)
-      })
-    }
-
-    function getData() {
-      mockData().then((response) => {
-        Object.keys(response).forEach((key) => {
-          let obj = findPropertyByName('name', key)
-          if (obj) {
-            obj.defaultValue = response[key]
-          }
-        })
+        }
       })
     }
 
@@ -702,8 +670,11 @@ export default defineComponent({
     }
 
     function handleSubmit() {
-      setTimeout(() => {
-        // axios.post('xxx', form)
+      axios.post('http://127.0.0.1:3000/cats').then((res) => {
+        console.log(res)
+        console.log(sourceValue)
+        console.log(originValue)
+        sourceValue.postMessage(res.data, originValue)
       })
     }
 
@@ -729,6 +700,7 @@ export default defineComponent({
           })}
         </div>
         <button onClick={handleSubmit}>提交</button>
+        <button onClick={handleSubmit}>保存</button>
       </div>
     )
   }
